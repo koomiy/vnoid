@@ -37,7 +37,7 @@ public:
 
 public: 
 	virtual void Init(SimpleControllerIO* io);
-    virtual void TerrainAnalysis();
+    virtual void GroundScan();
 
 	MyCamera();
 

@@ -49,7 +49,7 @@ void MyCamera::Init(SimpleControllerIO* io) {
     timeStep = io->timeStep();
 }
 
-void MyCamera::TerrainAnalysis() {
+void MyCamera::GroundScan() {
     // get cameras
     // when there are several cameras
     for (size_t i = 0; i < cameras.size(); i++) {
