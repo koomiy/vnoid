@@ -1,12 +1,5 @@
 ﻿#pragma once
 
-// define only simulate on windows
-//#define _WIN64
-
-#ifdef _WIN64
-#include "debug.h"
-#endif
-
 #include <cnoid/Body>
 #include <cnoid/BasicSensors>
 #include <cnoid/SimpleController>
@@ -14,11 +7,18 @@
 
 #include "filter.h"
 
+// add headfiles for Robot::Operation function: 2024/1/12: Tankaa
+#include "footstep.h"
+#include <deque>
+
 #include <string>
 using namespace std;
 
 namespace cnoid{
 namespace vnoid{
+
+class Footstep;
+class Step;
 
 /**
  *  A single joint of a robot 
@@ -218,7 +218,10 @@ public:
 class Robot{
 public:
 	// parameters
-	
+	double max_stride = 0.10;
+	double max_turn   = 0.10;
+	double max_sway   = 0.10;
+
 	bool      base_actuation;             ///< base actuation. if set true, the base link of the robot can be moved directly.
     double    gyro_filter_cutoff;         ///< cutoff frequency [Hz] of filter for rate gyro sensor
     double    acc_filter_cutoff;          ///< cutoff frequency [Hz] of filter for acceleration sensor
@@ -248,7 +251,9 @@ public:
     Filter   foot_force_filter [2][3];  ///< force filter of each foot (r|l, x|y|z)
     Filter   foot_moment_filter[2][3];  ///< moment filter of each foot (r|l, x|y|z)
     vector<Filter>  joint_pos_filter;   ///< joint angle filter
-    	
+
+	//add joystick variable
+	Joystick joystick;
 public:
 	/**
 	 * @brief performs initialization
@@ -293,6 +298,8 @@ public:
 	 * 
 	 **/
 	void  Actuate(Timer& timer, Base& base, vector<Joint>& joint);
+    // add Robot::Operation function: 2024/1/12: Tanaka
+	void Operation(/*Joystick joystick, */deque<Step>& steps);
 
 	Robot();
 };

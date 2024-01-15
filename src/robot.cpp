@@ -314,5 +314,46 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 	}
 }
 
+// add Robot::Operartion function to control the robot by using joystick
+// add sway movement: 2024/1/15: Tanaka
+void Robot::Operation(deque<Step>& steps){
+	Step step;
+	joystick.readCurrentState();
+	//  max_* are defined in robot.h
+	step.stride   = 0.0 - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
+	// Using L and R buttons instead of R stick to turn may be better since turning with R stick needs sensitive operation.: 2024/1/15: Tanaka
+	// step.turn     = 0.0 - max_turn   * joystick.getPosition(Joystick::R_STICK_H_AXIS);
+	step.turn     = 0.0 - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
+	step.sway     = 0.0 - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
+	step.spacing  = 0.20;
+	step.climb    = 0.0;
+	step.duration = 0.5;
+
+	steps.push_back(step);
+	steps.push_back(step);
+	steps.push_back(step);
+
+	step.stride   = 0.0;
+	step.turn 	  = 0.0;
+	step.sway 	  = 0.0;
+
+	steps.push_back(step);
+}
+// Step Robot::Operation(Joystick joystick){
+// 	double max_stride = 2.0;
+// 	double max_turn   = M_PI / 4;
+// 	double max_sway   = 0.20;
+// 	Step step;
+
+// 	step.stride   = 0.0 - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
+// 	// Using L and R buttons instead of R stick to turn may be better since turning with R stick needs sensitive operation.: 2024/1/12: Tanaka
+// 	step.turn     = 0.0 - max_turn   * joystick.getPosition(Joystick::R_STICK_H_AXIS);
+// 	step.sway     = 0.0 - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
+// 	step.spacing  = 0.20;
+// 	step.climb    = 0.0;
+// 	step.duration = 0.5;
+
+// 	return step;
+// }
 }
 }
