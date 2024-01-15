@@ -52,7 +52,7 @@ public:
             #else
             printf("push A_BUTTON\n");
             #endif
-            camera->TerrainAnalysis();
+            camera->GroundScan();
         }
         PreButtonState = ButtonState;
         
