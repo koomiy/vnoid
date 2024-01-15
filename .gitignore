@@ -1,0 +1,5 @@
+# log ファイルを除外する
+project/vnoid_sample_project_log
+
+# .vnoidディレクトリを除外する
+.vnoid/
