@@ -161,6 +161,17 @@ void FkSolver::Comp(const Param& param, const vector<Joint>& joint, const Base& 
 
 void FkSolver::FootToGroundFK(){
     // 支持脚基準の地面点群の高さを計算する関数
+
+    // Define variables
+    // pos_BaseToAncle = // CompLegFkから取得
+    pos_AncleToFoot = Vector3(0.0, 0.0, -0.05);
+    pos_BaseToHead = Vector3(0.0, 0.0, 0.5);
+    pos_HeadToCamera = Vector3(0.1, 0.0, 0.0);
+    // pos_CameraToGround = // カメラ情報から取得 
+    // ori_BaseToAncle = // CompLegFkから取得
+    // ori_BaseToHead = // 単位行列
+    // ori_HeadToCamera = // Cameraのプロパティから取得
+    ori_BaseToCamera = ori_BaseToHead * ori_HeadToCamera
 }
 
 }
