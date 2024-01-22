@@ -159,5 +159,9 @@ void FkSolver::Comp(const Param& param, const vector<Joint>& joint, const Base& 
     centroid.com_pos = base.pos + base.ori * com;
 }
 
+void FkSolver::FootToGroundFK(){
+    // 支持脚基準の地面点群の高さを計算する関数
+}
+
 }
 }
