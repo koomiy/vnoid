@@ -174,16 +174,16 @@ void MyRobot::Control(){
 			R_BUTTON -> R
 		    */
 		
-		std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
-			    << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
-			    << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
-			    << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
-			    << joystick.getButtonState(Joystick::A_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::B_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::X_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::L_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::R_BUTTON) << std::endl;
+		//std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
+		//	    << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
+		//	    << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
+		//	    << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
+		//	    << joystick.getButtonState(Joystick::A_BUTTON) << " "
+		//	    << joystick.getButtonState(Joystick::B_BUTTON) << " "
+		//	    << joystick.getButtonState(Joystick::X_BUTTON) << " "
+		//	    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
+		//	    << joystick.getButtonState(Joystick::L_BUTTON) << " "
+		//	    << joystick.getButtonState(Joystick::R_BUTTON) << std::endl;
 	
 		// erase current footsteps
 		while(footstep.steps.size() > 2)

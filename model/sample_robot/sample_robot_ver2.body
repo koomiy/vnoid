@@ -187,7 +187,7 @@ links:
             id: 0
             translation: [0.0, 0.0, 0.0] 
             rotation: [1.0, 0.0, 0.0, 60.0]
-            format: COLOR_DEPTH
+            format: COLOR_POINT_CLOUD
             lens_type: "NORMAL"
             on: true
             width: 640

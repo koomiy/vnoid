@@ -95,6 +95,8 @@ void MyCamera::GroundScan() {
         point.y = e(1);
         point.z = e(2);
 
+        printf("point data : %lf, %lf, %lf\n", e(0), e(1), e(2));
+
         // color(R, G, B)
         //point.r = pixels[3 * i + 0];
         //point.g = pixels[3 * i + 1];
