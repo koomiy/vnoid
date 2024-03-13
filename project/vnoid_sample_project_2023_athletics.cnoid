@@ -83,7 +83,7 @@ items:
               plugin: Body
               class: WorldLogFileItem
               data: 
-                file: "vnoid_sample_project_log"
+                file: "vnoid_teamMA1_log.log"
                 format: CNOID-WORLD-LOG
                 timeStampSuffix: false
                 recordingFrameRate: 0
@@ -110,7 +110,7 @@ items:
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-            initialRootPosition: [ 6.5, 0.97, 0.95 ]
+            initialRootPosition: [ 13.2, 1.0, 0.85 ]
             initialRootAttitude: [ 
               1, 0, 0, 
               0, 1, 0, 

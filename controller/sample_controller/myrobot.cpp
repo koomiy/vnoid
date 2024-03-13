@@ -14,7 +14,7 @@ void MyRobot::Init(SimpleControllerIO* io){
     // init params
     //  dynamical parameters
 	param.total_mass = 50.0;
-	param.com_height =  0.80;
+	param.com_height =  0.75;
 	param.gravity    =  9.8;
     
     // kinematic parameters
@@ -133,20 +133,20 @@ void MyRobot::Init(SimpleControllerIO* io){
     footstep_buffer.steps.push_back(footstep.steps[1]);
 
     // init stepping controller
-    stepping_controller.swing_height = 0.05;
+    stepping_controller.swing_height = 0.08;
     stepping_controller.swing_tilt   = 0.0;
     stepping_controller.dsp_duration = 0.05;
     
     // init stabilizer
     stabilizer.orientation_ctrl_gain_p = 100.0;
     stabilizer.orientation_ctrl_gain_d = 10.0;
-    stabilizer.dcm_ctrl_gain           = 2.0;
+    stabilizer.dcm_ctrl_gain           = 5.0;
     stabilizer.base_tilt_rate          = 5.0;
     stabilizer.base_tilt_damping_p     = 100.0;
     stabilizer.base_tilt_damping_d     = 50.0;
 
     // joystick param
-    max_stride = 0.2;
+    max_stride = 0.22;
     max_turn = 0.1;
 
 }
@@ -174,7 +174,7 @@ void MyRobot::Control(){
 			R_BUTTON -> R
 		    */
 		
-		std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
+		/*std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
 			    << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
 			    << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
 			    << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
@@ -183,7 +183,7 @@ void MyRobot::Control(){
 			    << joystick.getButtonState(Joystick::X_BUTTON) << " "
 			    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
 			    << joystick.getButtonState(Joystick::L_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::R_BUTTON) << std::endl;
+			    << joystick.getButtonState(Joystick::R_BUTTON) << std::endl;*/
 	
 		// erase current footsteps
 		while(footstep.steps.size() > 2)
@@ -191,9 +191,12 @@ void MyRobot::Control(){
 
 		Step step;
 		step.stride   = -max_stride*joystick.getPosition(Joystick::L_STICK_V_AXIS);
-		step.turn     = -max_turn  *joystick.getPosition(Joystick::L_STICK_H_AXIS);
+		step.turn     = 0.0;    //-max_turn*joystick.getPosition(Joystick::L_STICK_H_AXIS);
 		step.spacing  = 0.20;
-		step.climb    = 0.0;
+        if(joystick.getPosition(Joystick::L_STICK_V_AXIS) < 0){
+            step.climb    = -0.20;
+        }
+        printf("%lf\n", step.climb);
 		step.duration = 0.5;
 		footstep.steps.push_back(step);
 		footstep.steps.push_back(step);
