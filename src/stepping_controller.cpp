@@ -182,7 +182,7 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
         foot[swg].pos_ref.x()      = (1.0 - ch)*stb0.foot_pos[swg].x() + ch*stb1.foot_pos[swg].x();         // ここでは、水平成分のみ計算する必要があります。
         foot[swg].pos_ref.y()      = (1.0 - ch)*stb0.foot_pos[swg].y() + ch*stb1.foot_pos[swg].y();         // ここでは、水平成分のみ計算する必要があります。
         foot[swg].pos_ref.z()      = stb0.foot_pos[swg].z() + QuinticInterpolate(ts, 0.3, tauv, -0.20);   // Quintic interpolation ここにclimbの情報を引っ張ってくる
-        //printf("swg_ver_traj: %lf\n", foot[swg].pos_ref.z());
+        
         foot[swg].angle_ref    = stb0.foot_angle[swg] + ch*turn + cw*tilt;
         foot[swg].ori_ref      = FromRollPitchYaw(foot[swg].angle_ref);
         foot[swg].contact_ref  = false;

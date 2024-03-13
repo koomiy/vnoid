@@ -145,10 +145,6 @@ void MyRobot::Init(SimpleControllerIO* io){
     stabilizer.base_tilt_damping_p     = 100.0;
     stabilizer.base_tilt_damping_d     = 50.0;
 
-    // joystick param
-    max_stride = 0.22;
-    max_turn = 0.1;
-
 }
 
 void MyRobot::Control(){
@@ -174,7 +170,7 @@ void MyRobot::Control(){
 			R_BUTTON -> R
 		    */
 		
-		/*std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
+		std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
 			    << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
 			    << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
 			    << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
@@ -183,7 +179,7 @@ void MyRobot::Control(){
 			    << joystick.getButtonState(Joystick::X_BUTTON) << " "
 			    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
 			    << joystick.getButtonState(Joystick::L_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::R_BUTTON) << std::endl;*/
+			    << joystick.getButtonState(Joystick::R_BUTTON) << std::endl;
 	
 		// erase current footsteps
 		while(footstep.steps.size() > 2)
@@ -191,12 +187,9 @@ void MyRobot::Control(){
 
 		Step step;
 		step.stride   = -max_stride*joystick.getPosition(Joystick::L_STICK_V_AXIS);
-		step.turn     = 0.0;    //-max_turn*joystick.getPosition(Joystick::L_STICK_H_AXIS);
+		step.turn     = -max_turn*joystick.getPosition(Joystick::L_STICK_H_AXIS);
 		step.spacing  = 0.20;
-        if(joystick.getPosition(Joystick::L_STICK_V_AXIS) < 0){
-            step.climb    = -0.20;
-        }
-        printf("%lf\n", step.climb);
+        step.climb    = 0.0;
 		step.duration = 0.5;
 		footstep.steps.push_back(step);
 		footstep.steps.push_back(step);
