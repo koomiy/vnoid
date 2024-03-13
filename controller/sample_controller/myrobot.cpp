@@ -14,7 +14,7 @@ void MyRobot::Init(SimpleControllerIO* io){
     // init params
     //  dynamical parameters
 	param.total_mass = 50.0;
-	param.com_height =  0.80;
+	param.com_height =  0.75;
 	param.gravity    =  9.8;
     
     // kinematic parameters
@@ -145,10 +145,6 @@ void MyRobot::Init(SimpleControllerIO* io){
     stabilizer.base_tilt_damping_p     = 100.0;
     stabilizer.base_tilt_damping_d     = 50.0;
 
-    // joystick param
-    max_stride = 0.2;
-    max_turn = 0.1;
-
 }
 
 void MyRobot::Control(){
@@ -189,19 +185,28 @@ void MyRobot::Control(){
 		while(footstep.steps.size() > 2)
 			footstep.steps.pop_back();
 
-		Step step;
-		step.stride   = -max_stride*joystick.getPosition(Joystick::L_STICK_V_AXIS);
-		step.turn     = -max_turn  *joystick.getPosition(Joystick::L_STICK_H_AXIS);
-		step.spacing  = 0.20;
-		step.climb    = 0.0;
-		step.duration = 0.5;
-		footstep.steps.push_back(step);
-		footstep.steps.push_back(step);
-		footstep.steps.push_back(step);
-		step.stride = 0.0;
-		step.turn   = 0.0;
-		footstep.steps.push_back(step);
-		
+        // planning the desire landing potion and orientation by joystick input
+        Robot::Operation(footstep.steps);
+
+        //// old landing planner
+        // double max_stride = 2.0;
+        // double max_turn   = M_PI / 4;
+    	// double max_sway   = 0.20;
+        // Step step;
+        // step.stride   = 0.0 -max_stride*joystick.getPosition(Joystick::L_STICK_V_AXIS);
+        // step.turn     = 0.0 -max_turn  *joystick.getPosition(Joystick::R_STICK_H_AXIS);
+        // step.sway     = 0.0 -max_sway  *joystick.getPosition(Joystick::L_STICK_H_AXIS);
+        // step.spacing  = 0.20;
+        // step.climb    = 0.0;
+        // step.duration = 0.5;
+        // footstep.steps.push_back(step);
+        // footstep.steps.push_back(step);
+        // footstep.steps.push_back(step);
+        // step.stride = 0.0;
+        // step.turn   = 0.0;
+        // step.sway   = 0.0;
+        // footstep.steps.push_back(step);
+        
 		footstep_planner.Plan(param, footstep);
         footstep_planner.GenerateDCM(param, footstep);
 	}
@@ -214,9 +219,9 @@ void MyRobot::Control(){
     stabilizer         .Update(timer, param, footstep_buffer, centroid, base, foot);
     
     // step timing adaptation
-    Centroid centroid_pred = centroid;
-    stabilizer.Predict(timer, param, footstep_buffer, base, centroid_pred);
-    stepping_controller.AdjustTiming(timer, param, centroid_pred, footstep, footstep_buffer);
+    //Centroid centroid_pred = centroid;
+    //stabilizer.Predict(timer, paramb, footstep_buffer, base, centroid_pred);
+    //stepping_controller.AdjustTiming(timer, param, centroid_pred, footstep, footstep_buffer);
 
     hand[0].pos_ref = centroid.com_pos_ref + base.ori_ref*Vector3(0.0, -0.25, -0.1);
     hand[0].ori_ref = base.ori_ref;
