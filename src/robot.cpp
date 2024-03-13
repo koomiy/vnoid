@@ -184,6 +184,9 @@ Robot::Robot(){
     foot_moment_filter_cutoff = 20.0;
     joint_pos_filter_cutoff   = 10.0;
 	
+	max_stride = 0.10;
+	max_sway = 0.10;
+	max_turn = 0.10;
 }
 
 void Robot::Init(SimpleControllerIO* io, Timer& timer, vector<Joint>& joint){
@@ -314,8 +317,6 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 	}
 }
 
-// add Robot::Operartion function to control the robot by using joystick
-// add sway movement: 2024/1/15: Tanaka
 void Robot::Operation(deque<Step>& steps){
 	Step step;
 	joystick.readCurrentState();

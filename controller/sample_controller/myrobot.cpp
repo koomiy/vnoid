@@ -1,4 +1,5 @@
 ﻿#include "myrobot.h"
+#include <iostream>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ void MyRobot::Init(SimpleControllerIO* io){
     // init params
     //  dynamical parameters
 	param.total_mass = 50.0;
-	param.com_height =  0.70;
+	param.com_height =  0.75;
 	param.gravity    =  9.8;
     
     // kinematic parameters
@@ -168,8 +169,8 @@ void MyRobot::Control(){
 			L_BUTTON -> L
 			R_BUTTON -> R
 		    */
-		/*
-		DSTR << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
+		
+		std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
 			    << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
 			    << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
 			    << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
@@ -178,16 +179,16 @@ void MyRobot::Control(){
 			    << joystick.getButtonState(Joystick::X_BUTTON) << " "
 			    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
 			    << joystick.getButtonState(Joystick::L_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::R_BUTTON) << endl;
-		*/
+			    << joystick.getButtonState(Joystick::R_BUTTON) << std::endl;
 	
 		// erase current footsteps
 		while(footstep.steps.size() > 2)
 			footstep.steps.pop_back();
 
-        // call Robot::Operation function: 2024/1/12: Tanaka
-        Robot::Operation(/*joystick, */footstep.steps);
+        // planning the desire landing potion and orientation by joystick input
+        Robot::Operation(footstep.steps);
 
+        //// old landing planner
         // double max_stride = 2.0;
         // double max_turn   = M_PI / 4;
     	// double max_sway   = 0.20;

@@ -7,7 +7,7 @@
 
 #include "filter.h"
 
-// add headfiles for Robot::Operation function: 2024/1/12: Tankaa
+// add headfiles for Robot::Operation
 #include "footstep.h"
 #include <deque>
 
@@ -218,9 +218,10 @@ public:
 class Robot{
 public:
 	// parameters
-	double max_stride = 0.10;
-	double max_turn   = 0.10;
-	double max_sway   = 0.10;
+
+	double max_stride;
+	double max_turn;
+	double max_sway;
 
 	bool      base_actuation;             ///< base actuation. if set true, the base link of the robot can be moved directly.
     double    gyro_filter_cutoff;         ///< cutoff frequency [Hz] of filter for rate gyro sensor
@@ -252,8 +253,8 @@ public:
     Filter   foot_moment_filter[2][3];  ///< moment filter of each foot (r|l, x|y|z)
     vector<Filter>  joint_pos_filter;   ///< joint angle filter
 
-	//add joystick variable
-	Joystick joystick;
+	Joystick joystick;	//add joystick object
+
 public:
 	/**
 	 * @brief performs initialization
@@ -298,8 +299,7 @@ public:
 	 * 
 	 **/
 	void  Actuate(Timer& timer, Base& base, vector<Joint>& joint);
-    // add Robot::Operation function: 2024/1/12: Tanaka
-	void Operation(/*Joystick joystick, */deque<Step>& steps);
+	void Operation(/*Joystick joystick, */deque<Step>& steps);	// add by Tanaka (2024/1/12)
 
 	Robot();
 };

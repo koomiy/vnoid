@@ -18,9 +18,6 @@ public:
 
     int       plan_cycle;
     bool      use_joystick;
-    // double    max_stride;
-    // double    max_turn;
-    //Joystick  joystick;   // move to robot.h: 2024/1/15: Tanaka
 
 	Timer            timer;
     Param            param;
@@ -41,6 +38,7 @@ public:
 public:
 	virtual void  Init   (SimpleControllerIO* io);
 	virtual void  Control();
+    
 	MyRobot();
 
 };
