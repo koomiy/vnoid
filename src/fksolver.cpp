@@ -159,5 +159,39 @@ void FkSolver::Comp(const Param& param, const vector<Joint>& joint, const Base& 
     centroid.com_pos = base.pos + base.ori * com;
 }
 
+// 支持脚基準の地面点群の高さを計算する関数
+void FkSolver::FootToGroundFK(){
+    // Define variables
+    Vector3    FootToGround[3];       // Ground coordinate from foot
+    Vector3    pos_BaseToAncle[3];    // Ancle coordinate from base-link
+    Quaternion qua_BaseToAncle[3];    // Ancle quaternion from base-link
+    Quaternion qua_AncleToFoot[3];    // Foot quaternion from ancle
+    Vector3    pos_AncleToFoot[3];    // Foot coordinate from ancle
+    Vector3    pos_BaseToHead[3];     // Head coordinate from base-link
+    Vector3    pos_HeadToCamera[3];   // Camera coordinate from head
+    Vector3    pos_CameraToGround[3]; // Ground coordinate from camera
+    Quaternion qua_BaseToCamera[3];   // Camera quaternion from base-link
+
+    // pos_BaseToAncle // CompLegFkから前半3要素取得
+    // qua_BaseToAncle // CompLegFkから後半3要素取得
+    // CompLegFK(l1, l2, q, pos_BaseToAncle, qua_BaseToAncle)
+    // CompLegFKのl1, l2, qがわからない。CompLegFKと同じようにパラメータ化して読み込むのが良い？
+
+    // qua_AncleToFoot // CompLegFKと同じように取得できる？
+    // pos_AncleToFoot = {0.0, 0.0, -0.05}; // 固定値
+
+    // pos_BaseToHead = {0.0, 0.0, 0.5}; // 固定値（回転なし）
+
+    // pos_HeadToCamera = {0.1, 0.0, 0.0}; // 固定値（回転なし）
+
+    // pos_CameraToGround = // カメラ情報から取得 
+
+    // qua_BaseToCamera = // 頭はベースに対して傾いていないのでCameraのプロパティから頭とカメラの傾き関係を取得でOK
+
+    // 最後に支持脚基準の地面点群の座標を計算
+    // FootToGround = qua_BaseToAncle*qua_AncleToFoot * (pos_BaseToHead + pos_HeadToCamera + qua_BaseToCamera*pos_CameraToGround - pos_BaseToAncle - qua_BaseToAncle*pos_AncleToFoot);
+    // return FootToGround[3] // 高さだけ返す
+}
+
 }
 }

@@ -87,6 +87,8 @@ public:
      **/
     void CompArmFk(double l1, double l2, const double* q, Vector3& pos, Quaternion& ori);
 
+    void FootToGroundFK();
+
     /** @brief Whole-body FK
      *  @param  param     Parameters.
      *  @param  joint     Array of joints. Joint::q is used as input joint angle.
