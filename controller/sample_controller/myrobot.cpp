@@ -156,6 +156,7 @@ void MyRobot::Control(){
 
     // calc FK
     fk_solver.Comp(param, joint, base, centroid, hand, foot);
+    Vector3 ground_coordinate = fk_solver.FootToGroundFK(param, joint, base, foot);
 
 	if(timer.count % 10 == 0){
 		// read joystick

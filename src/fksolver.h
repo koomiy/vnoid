@@ -87,7 +87,7 @@ public:
      **/
     void CompArmFk(double l1, double l2, const double* q, Vector3& pos, Quaternion& ori);
 
-    void FootToGroundFK();
+    Vector3 FootToGroundFK(const Param& param, const vector<Joint>& joint, const Base& base,  vector<Foot>& foot);
 
     /** @brief Whole-body FK
      *  @param  param     Parameters.
