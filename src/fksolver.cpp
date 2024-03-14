@@ -160,7 +160,7 @@ void FkSolver::Comp(const Param& param, const vector<Joint>& joint, const Base& 
 }
 
 // 支持脚基準の地面点群の高さを計算する関数
-void FkSolver::FootToGroundFK(){
+void FkSolver::FootToGroundFK(){    // 配列構造がわからん() オペレータの使い方がわからん() 
     // Define variables
     Vector3    FootToGround[3];       // Ground coordinate from foot
     Vector3    pos_BaseToAncle[3];    // Ancle coordinate from base-link

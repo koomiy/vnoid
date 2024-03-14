@@ -10,9 +10,9 @@ namespace vnoid{
 const double pi = 3.14159265358979;
 
 SteppingController::SteppingController(){
-    swing_height        = 0.1;
+    swing_height        = 0.05;
     swing_tilt          = 0.0;
-    dsp_duration        = 0.1;
+    dsp_duration        = 0.05;
     descend_duration    = 0.0;
     descend_depth       = 0.0;
     landing_adjust_rate = 0.0;
@@ -178,10 +178,19 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
         // foot tilting
         Vector3 tilt = stb0.foot_ori[swg]*Vector3(0.0, swing_tilt, 0.0);
 
-        // Quintic interpolation
-        foot[swg].pos_ref.x()      = (1.0 - ch)*stb0.foot_pos[swg].x() + ch*stb1.foot_pos[swg].x();         // ここでは、水平成分のみ計算する必要があります。
-        foot[swg].pos_ref.y()      = (1.0 - ch)*stb0.foot_pos[swg].y() + ch*stb1.foot_pos[swg].y();         // ここでは、水平成分のみ計算する必要があります。
-        foot[swg].pos_ref.z()      = stb0.foot_pos[swg].z() + QuinticInterpolate(ts, 0.3, tauv, -0.20);   // Quintic interpolation ここにclimbの情報を引っ張ってくる
+        // calc horizontal component of the swing foot trajectory
+        foot[swg].pos_ref.x()      = (1.0 - ch)*stb0.foot_pos[swg].x() + ch*stb1.foot_pos[swg].x();
+        foot[swg].pos_ref.y()      = (1.0 - ch)*stb0.foot_pos[swg].y() + ch*stb1.foot_pos[swg].y();
+
+        // calc vertical component of the swing foot trajectory
+        double tm = 0.3;
+        double climb = stb1.foot_pos[swg].z() - stb0.foot_pos[swg].z();
+        if (climb != 0.0){  // for walking on stairs
+            foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + QuinticInterpolate(ts, tm, tauv, climb);   // quintic interpolation
+        } else { // for walking on horizontal surfaces or slightly uneven terrain
+            foot[swg].pos_ref.z()  = (1.0 - ch)*stb0.foot_pos[swg].z() + ch*stb1.foot_pos[swg].z();   // cycloid
+            foot[swg].pos_ref.z() += (cv*(swing_height + 0.5*descend_depth) - cv2*descend_depth);
+        }
         
         foot[swg].angle_ref    = stb0.foot_angle[swg] + ch*turn + cw*tilt;
         foot[swg].ori_ref      = FromRollPitchYaw(foot[swg].angle_ref);
