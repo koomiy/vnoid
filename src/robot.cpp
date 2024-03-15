@@ -333,17 +333,17 @@ void Robot::Operation(deque<Step>& steps){
 // P is the self position of the robot
 // Q is the target position of the movement
 // A and B are the component of the line
-	// Vector3 P = Vector3(, , );
-	// Vector3 Q = Vector3(step.stride, step.sway, step.climb);
-	// L = abs((B - A).cross(P - A)) / (B - A).length();
-	// l = abs((B - A).cross(P - A)) / (B - A).length();
-	// r_leg = sqrt(0.05 * 0.05 + 0.1 * 0.1);
-	// if (L - l <= r_leg){
-	// 	Vector3 PQ = (L - r_leg) * (Q - P) / (Q - P).length();
-	// 	step.stride = PQ(1);
-	// 	step.sway 	= PQ(2);
-	// 	step.climb 	= PQ(3);
-	// }
+	Vector3 P = Vector3(0.0, 0.0, 0.0);
+	Vector3 Q = Vector3(step.stride, step.sway, step.climb);
+	L = abs((B - A).cross(P - A)) / (B - A).length();	// 現在の支持位置から、着地可能エッジまでの距離
+	l = abs((B - A).cross(Q - A)) / (B - A).length();	// 現在の支持位置から、目標着地位置までの距離
+	r_leg = sqrt(0.05 * 0.05 + 0.1 * 0.1);	// 足を円モデルとしたときの半径
+	if (L - l <= r_leg){
+		Vector3 PQ = (L - r_leg) * (Q - P) / (Q - P).length();	// 修正後の目標着地位置
+		step.stride = PQ(1);
+		step.sway 	= PQ(2);
+		step.climb 	= PQ(3);
+	}
 
 	steps.push_back(step);
 	steps.push_back(step);
