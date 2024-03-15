@@ -161,7 +161,7 @@ void FkSolver::Comp(const Param& param, const vector<Joint>& joint, const Base& 
 }
 
 // 支持脚基準の地面点群の高さを計算する関数
-Vector3 FkSolver::FootToGroundFK(const Param& param, const vector<Joint>& joint, const Base& base,  vector<Foot>& foot){
+vector FkSolver::FootToGroundFK(const Param& param, const vector<Joint>& joint, const Base& base,  vector<Foot>& foot, vector<Vector3>& points_convex){
     // Define variables
     Vector3    FootToGround;       // Ground coordinate from foot
     Vector3    pos_BaseToAncle;    // Ancle coordinate from base-link
@@ -206,29 +206,29 @@ Vector3 FkSolver::FootToGroundFK(const Param& param, const vector<Joint>& joint,
     pos_HeadToCamera = Vector3(0.2, 0.0, 0.0); // 固定値（回転なし）
 
     // カメラ情報から点群の相対座標を取得
-    std::vector<Vector3> pcList;
-    pcList.clear(); // 既存の要素を削除
-    pcList.push_back(Vector3(-0.290532f, 0.159793f, -1.235767f));
-    pcList.push_back(Vector3(-0.291616f, 0.207776f, -1.240375f));
-    pcList.push_back(Vector3(-0.291783f, 0.215190f, -1.241087f));
-    pcList.push_back(Vector3(-0.291825f, 0.217045f, -1.241265f));
-    pcList.push_back(Vector3(-0.288177f, 0.217045f, -1.241266f));
-    pcList.push_back(Vector3(-0.268114f, 0.217045f, -1.241267f));
-    pcList.push_back(Vector3(-0.005472f, 0.217048f, -1.241283f));
-    pcList.push_back(Vector3(0.264474f, 0.217051f, -1.241300f));
-    pcList.push_back(Vector3(0.282713f, 0.217051f, -1.241301f));
-    pcList.push_back(Vector3(0.290009f, 0.217051f, -1.241301f));
-    pcList.push_back(Vector3(0.289968f, 0.215196f, -1.241123f));
-    pcList.push_back(Vector3(0.286636f, 0.066701f, -1.226861f));
-    pcList.push_back(Vector3(0.283737f, -0.062458f, -1.214457f));
-    pcList.push_back(Vector3(0.282153f, -0.133091f, -1.207673f));
-    pcList.push_back(Vector3(0.281210f, -0.175093f, -1.203638f));
-    pcList.push_back(Vector3(0.280702f, -0.197727f, -1.201464f));
-    pcList.push_back(Vector3(0.280390f, -0.211615f, -1.200130f));
-    pcList.push_back(Vector3(0.273336f, -0.211615f, -1.200130f));
-    pcList.push_back(Vector3(0.022925f, -0.211613f, -1.200115f));
-    pcList.push_back(Vector3(-0.282146f, -0.211609f, -1.200097f));
-    pcList.push_back(Vector3(-0.286479f, -0.019695f, -1.218529f));
+    // std::vector<Vector3> pcList;
+    // pcList.clear(); // 既存の要素を削除
+    // pcList.push_back(Vector3(-0.290532f, 0.159793f, -1.235767f));
+    // pcList.push_back(Vector3(-0.291616f, 0.207776f, -1.240375f));
+    // pcList.push_back(Vector3(-0.291783f, 0.215190f, -1.241087f));
+    // pcList.push_back(Vector3(-0.291825f, 0.217045f, -1.241265f));
+    // pcList.push_back(Vector3(-0.288177f, 0.217045f, -1.241266f));
+    // pcList.push_back(Vector3(-0.268114f, 0.217045f, -1.241267f));
+    // pcList.push_back(Vector3(-0.005472f, 0.217048f, -1.241283f));
+    // pcList.push_back(Vector3(0.264474f, 0.217051f, -1.241300f));
+    // pcList.push_back(Vector3(0.282713f, 0.217051f, -1.241301f));
+    // pcList.push_back(Vector3(0.290009f, 0.217051f, -1.241301f));
+    // pcList.push_back(Vector3(0.289968f, 0.215196f, -1.241123f));
+    // pcList.push_back(Vector3(0.286636f, 0.066701f, -1.226861f));
+    // pcList.push_back(Vector3(0.283737f, -0.062458f, -1.214457f));
+    // pcList.push_back(Vector3(0.282153f, -0.133091f, -1.207673f));
+    // pcList.push_back(Vector3(0.281210f, -0.175093f, -1.203638f));
+    // pcList.push_back(Vector3(0.280702f, -0.197727f, -1.201464f));
+    // pcList.push_back(Vector3(0.280390f, -0.211615f, -1.200130f));
+    // pcList.push_back(Vector3(0.273336f, -0.211615f, -1.200130f));
+    // pcList.push_back(Vector3(0.022925f, -0.211613f, -1.200115f));
+    // pcList.push_back(Vector3(-0.282146f, -0.211609f, -1.200097f));
+    // pcList.push_back(Vector3(-0.286479f, -0.019695f, -1.218529f));
     // pos_CameraToGround = Vector3(-0.334247, 0.000000, -1.421707);
     
     // 頭はベースに対して傾いていないのでCameraのプロパティから頭とカメラの傾き関係を取得でOK
@@ -240,16 +240,38 @@ Vector3 FkSolver::FootToGroundFK(const Param& param, const vector<Joint>& joint,
     qua_BaseToCamera = FromRollPitchYaw(angle_BaseToCamera);
 
     printf("STRAT\n");
-    for (const Vector3&v : pcList){
+    std::vector<Vector3> groundFromFoot;
+    for (const Vector3&v : points_convex){
        // 最後に支持脚基準の地面点群の座標を計算
         FootToGround = qua_BaseToAncle.conjugate() * (pos_BaseToHead + pos_HeadToCamera + qua_BaseToCamera*v - pos_BaseToAncle) - pos_AncleToFoot + Vector3(0, 0, 0.04);
-        printf("%lf,%lf,%lf\n", FootToGround[0], FootToGround[1], FootToGround[2]); 
+        // printf("%lf,%lf,%lf\n", FootToGround[0], FootToGround[1], FootToGround[2]);
+        groundFromFoot.push_back(FootToGround) 
     }
     printf("END\n");
-    // // 最後に支持脚基準の地面点群の座標を計算
-    // FootToGround = qua_BaseToAncle.conjugate() * (pos_BaseToHead + pos_HeadToCamera + qua_BaseToCamera*pos_CameraToGround - pos_BaseToAncle) - pos_AncleToFoot;
-    // printf("FootToGround[2]: %lf\n", FootToGround[2]);
-    return FootToGround;
+
+    // 長方形の四隅の座標を計算
+    double avgZ = std::accumulate(groundFromFoot.begin(), groundFromFoot.end(), 0.0, [](double sum, const Vector3& v) {
+       return sum + v.z;
+    }) / groundFromFoot.size();
+    auto minmaxX = std::minmax_element(groundFromFoot.begin(), groundFromFoot.end(), [](const Vector3& a, const Vector3& b) {
+        return a.x < b.x;
+    });
+    auto minmaxY = std::minmax_element(groundFromFoot.begin(), groundFromFoot.end(), [](const Vector3& a, const Vector3& b) {
+        return a.y < b.y;
+    });
+    double minX = std::round(minmaxX.first->x * 1000.0) / 1000.0;
+    double maxX = std::round(minmaxX.second->x * 1000.0) / 1000.0;
+    double minY = std::round(minmaxY.first->y * 1000.0) / 1000.0;
+    double maxY = std::round(minmaxY.second->y * 1000.0) / 1000.0;
+    double avgZRounded = std::round(avgZ * 1000.0) / 1000.0;
+    std::vector<Vector3> groundRectangle;
+    groundRectangle.push_back(Vector3(minX, maxY, avgZ));
+    groundRectangle.push_back(Vector3(maxX, maxY, avgZ));
+    groundRectangle.push_back(Vector3(minX, minY, avgZ));
+    groundRectangle.push_back(Vector3(maxX, minY, avgZ));
+
+    
+    return groundRectangle;
 }
 
 }
