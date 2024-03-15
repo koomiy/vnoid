@@ -130,7 +130,7 @@ items:
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-            initialRootPosition: [ 13.2, 1, 0.85 ]
+            initialRootPosition: [ 0.0, 1, 0.85 ]
             initialRootAttitude: [ 
               1, 0, 0, 
               0, 1, 0, 

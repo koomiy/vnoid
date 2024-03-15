@@ -147,40 +147,53 @@ void MyCamera::GroundScan() {
     //ccavehull.setAlpha (0.1);
     cvexhull.reconstruct (*cloud_convex);
     
-    //// output point on the plane's convex hull
-    //size_t num = cloud_convex->size();
-    //printf("size of cloud_convex: %ld\n", num);
-    //for (size_t i = 0; i < num; i++){
-    //    printf("point data : %lf, %lf, %lf\n", cloud_convex->points[i].x, cloud_convex->points[i].y, cloud_convex->points[i].z);
-    //}
-
-    // 四隅の点を取得する
-    const double eps = 1.0e-4;
-    vector<Vector3> points_landable;
-    points_landable.clear();
-    points_landable.resize(4);
-    for(int i = 0; i < cloud_convex->size()-2; i++){
-        pcl::PointXYZRGB& pcl0 = cloud_convex->points[i+0];
-        pcl::PointXYZRGB& pcl1 = cloud_convex->points[i+1];
-        pcl::PointXYZRGB& pcl2 = cloud_convex->points[i+2];
-        
-        Vector3 p0 = Vector3(pcl0.x, pcl0.y, pcl0.z);
-        Vector3 p1 = Vector3(pcl1.x, pcl1.y, pcl1.z);
-        Vector3 p2 = Vector3(pcl2.x, pcl2.y, pcl2.z);
-
-        Vector3 l0 = p1 - p0;
-        Vector3 l1 = p2 - p1;
-
-        if(std::abs(l1.dot(l0)) < eps){
-            // ほぼ直交する二線分であれば、それが隅の点
-            points_landable.push_back(p1);
-            printf("%lf, %lf, %lf\n", p1.x(), p1.y(), p1.z());
-        }
+    // output point on the plane's convex hull
+    size_t num = cloud_convex->size();
+    printf("size of cloud_convex: %ld\n", num);
+    for (size_t i = 0; i < num; i++){
+        printf("%lf, %lf, %lf\n", cloud_convex->points[i].x, cloud_convex->points[i].y, cloud_convex->points[i].z);
     }
+
+    // get corner points of the landable area using Harris Corner Detector
+    pcl::HarrisKeypoint3D <pcl::PointXYZRGB, pcl::PointXYZI> detector;
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_corner (new pcl::PointCloud<pcl::PointXYZI>);
+    //detector.setNonMaxSupression (true);
+    detector.setInputCloud (cloud_plane);
+    detector.setRadius (1e-2);
+    detector.setRefine(true);
+    //detector.setNormals(*cloud_plane);
+    //detector.setSearchSurface(cloud_convex);
+    //detector.setThreshold (1e-6);
+    detector.compute (*cloud_corner);
+    //pcl::PointIndicesConstPtr keypoints_indices = detector.getKeypointsIndices ();
+
+
+    //const double eps = 1.0e-4;
+    //vector<Vector3> points_landable;
+    //points_landable.clear();
+    //points_landable.resize(4);
+    //for(int i = 0; i < cloud_convex->size()-2; i++){
+    //    pcl::PointXYZRGB& pcl0 = cloud_convex->points[i+0];
+    //    pcl::PointXYZRGB& pcl1 = cloud_convex->points[i+1];
+    //    pcl::PointXYZRGB& pcl2 = cloud_convex->points[i+2];
+    //    
+    //    Vector3 p0 = Vector3(pcl0.x, pcl0.y, pcl0.z);
+    //    Vector3 p1 = Vector3(pcl1.x, pcl1.y, pcl1.z);
+    //    Vector3 p2 = Vector3(pcl2.x, pcl2.y, pcl2.z);
+    //
+    //    Vector3 l0 = p1 - p0;
+    //    Vector3 l1 = p2 - p1;
+    //
+    //    if(std::abs(l1.dot(l0)) < eps){
+    //        // ほぼ直交する二線分であれば、それが隅の点
+    //        points_landable.push_back(p1);
+    //        printf("%lf, %lf, %lf\n", p1.x(), p1.y(), p1.z());
+    //    }
+    //}
 
     // make a viewer of point cloud
     pcl::visualization::CloudViewer viewer("PointCloudViewer");
-    viewer.showCloud(cloud_convex);
+    viewer.showCloud(cloud_corner);
     
     // set the thread that called at once in visualization
     viewer.runOnVisualizationThreadOnce(viewerOneOff);

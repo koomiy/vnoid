@@ -16,6 +16,7 @@
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/surface/convex_hull.h>
 #include <pcl/filters/extract_indices.h>
+#include <pcl/keypoints/harris_3d.h>
 
 /*#include <pcl/io/pcd_io.h>
 #include <iostream>
