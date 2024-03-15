@@ -183,7 +183,7 @@ Robot::Robot(){
     foot_force_filter_cutoff  = 20.0;
     foot_moment_filter_cutoff = 20.0;
     joint_pos_filter_cutoff   = 10.0;
-	
+
 	max_stride = 0.25;
 	max_sway = 0.10;
 	max_turn = 0.10;
@@ -317,6 +317,8 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 	}
 }
 
+// add Robot::Operartion function to control the robot by using joystick
+// add sway movement: 2024/01/15: Tanaka
 void Robot::Operation(deque<Step>& steps){
 	joystick.readCurrentState();
 	Step step;
@@ -330,6 +332,21 @@ void Robot::Operation(deque<Step>& steps){
     }
 	step.duration = 0.5;
 
+// add step modification on the stairs: 2024/03/15: Tanaka
+// P and Q are the self position and the target position.
+// A and B are the component of the edge (E).
+// 以下にエッジを構成するA, B点のxy座標を入れれば使えるはず．
+	Vector2 P = Vector2(0.0, 0.0);
+	Vector2 Q = Vector2(step.stride, step.sway);
+	L_PE = abs((B - A).cross(P - A)) / (B - A).length();			// 現在の支持位置から、着地可能エッジまでの距離
+	L_PQ = (Q - P).length();										// 現在の支持位置から、目標着地位置までの距離
+	r_leg = sqrt(0.05 * 0.05 + 0.1 * 0.1);							// 足を円モデルとしたときの半径
+	if (L - l <= r_leg){
+		Vector3  Q_mod= (L - r_leg) * (Q - P) / (Q - P).length();	// 修正後の目標着地位置
+		step.stride = Q_mod(1);
+		step.sway 	= Q_mod(2);
+	}
+
 	steps.push_back(step);
 	steps.push_back(step);
 	steps.push_back(step);
@@ -340,21 +357,6 @@ void Robot::Operation(deque<Step>& steps){
 
 	steps.push_back(step);
 }
-// Step Robot::Operation(Joystick joystick){
-// 	double max_stride = 2.0;
-// 	double max_turn   = M_PI / 4;
-// 	double max_sway   = 0.20;
-// 	Step step;
 
-// 	step.stride   = 0.0 - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
-// 	// Using L and R buttons instead of R stick to turn may be better since turning with R stick needs sensitive operation.: 2024/1/12: Tanaka
-// 	step.turn     = 0.0 - max_turn   * joystick.getPosition(Joystick::R_STICK_H_AXIS);
-// 	step.sway     = 0.0 - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
-// 	step.spacing  = 0.20;
-// 	step.climb    = 0.0;
-// 	step.duration = 0.5;
-
-// 	return step;
-// }
 }
 }
