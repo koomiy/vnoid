@@ -145,6 +145,8 @@ void MyRobot::Init(SimpleControllerIO* io){
     stabilizer.base_tilt_damping_p     = 100.0;
     stabilizer.base_tilt_damping_d     = 50.0;
 
+    compStairStep = false;
+
 }
 
 void MyRobot::Control(){
@@ -152,6 +154,17 @@ void MyRobot::Control(){
 
     // calc FK
     fk_solver.Comp(param, joint, base, centroid, hand, foot);
+    if (compStairStep) {
+        ground_rectangle.clear();
+        ground_rectangle = fk_solver.FootToGroundFK(param, joint, base, foot, points_convex);
+        int i = 0;
+        for(Vector3& p : ground_rectangle){
+            printf("id%d: %lf, %lf, %lf\n", i, p.x(), p.y(), p.z());
+            i++;
+        }
+        compStairStep = false;
+    }
+    
 
 	if(timer.count % 10 == 0){
 		// read joystick
@@ -170,16 +183,16 @@ void MyRobot::Control(){
 			R_BUTTON -> R
 		    */
 		
-		std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
-			    << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
-			    << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
-			    << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
-			    << joystick.getButtonState(Joystick::A_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::B_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::X_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::L_BUTTON) << " "
-			    << joystick.getButtonState(Joystick::R_BUTTON) << std::endl;
+		//std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
+		//	    << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
+		//	    << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
+		//	    << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
+		//	    << joystick.getButtonState(Joystick::A_BUTTON) << " "
+		//	    << joystick.getButtonState(Joystick::B_BUTTON) << " "
+		//	    << joystick.getButtonState(Joystick::X_BUTTON) << " "
+		//	    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
+		//	    << joystick.getButtonState(Joystick::L_BUTTON) << " "
+		//	    << joystick.getButtonState(Joystick::R_BUTTON) << std::endl;
 	
 		// erase current footsteps
 		while(footstep.steps.size() > 2)
@@ -206,7 +219,7 @@ void MyRobot::Control(){
         // step.turn   = 0.0;
         // step.sway   = 0.0;
         // footstep.steps.push_back(step);
-        
+    
 		footstep_planner.Plan(param, footstep);
         footstep_planner.GenerateDCM(param, footstep);
 	}

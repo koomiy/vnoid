@@ -183,7 +183,10 @@ Robot::Robot(){
     foot_force_filter_cutoff  = 20.0;
     foot_moment_filter_cutoff = 20.0;
     joint_pos_filter_cutoff   = 10.0;
-	
+
+	max_stride = 0.25;
+	max_sway = 0.10;
+	max_turn = 0.10;
 }
 
 void Robot::Init(SimpleControllerIO* io, Timer& timer, vector<Joint>& joint){
@@ -317,16 +320,16 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 // add Robot::Operartion function to control the robot by using joystick
 // add sway movement: 2024/01/15: Tanaka
 void Robot::Operation(deque<Step>& steps){
-	Step step;
 	joystick.readCurrentState();
-	//  max_* are defined in robot.h
-	step.stride   = 0.0 - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
-	// Using L and R buttons instead of R stick to turn may be better since turning with R stick which needs sensitive operation.: 2024/1/15: Tanaka
-	// step.turn     = 0.0 - max_turn   * joystick.getPosition(Joystick::R_STICK_H_AXIS); //
-	step.turn     = 0.0 - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
-	step.sway     = 0.0 - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
+	Step step;
+	step.stride   = - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
+	step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
+	step.sway     = - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
 	step.spacing  = 0.20;
 	step.climb    = 0.0;
+	if (joystick.getPosition(Joystick::L_STICK_V_AXIS) < 0) {
+        step.climb    = -0.20;
+    }
 	step.duration = 0.5;
 
 // add step modification on the stairs: 2024/03/15: Tanaka

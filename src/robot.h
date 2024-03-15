@@ -255,6 +255,11 @@ public:
 
 	Joystick joystick;	//add joystick object
 
+	vector<Vector3> points_convex;
+	vector<Vector3> ground_rectangle;
+
+	bool compStairStep;
+
 public:
 	/**
 	 * @brief performs initialization

@@ -23,7 +23,10 @@ class VnoidSampleController : public SimpleController{
 public:
 	MyRobot*  robot;
     MyCamera* camera;
+    FkSolver* fk_solver;
     Joystick joystick;
+
+    vector<Vector3> ground_rectangle;
     bool PreButtonState;
     int count;
 
@@ -47,12 +50,16 @@ public:
         joystick.readCurrentState();
         bool ButtonState = joystick.getButtonState(Joystick::A_BUTTON);
         if (ButtonState && !PreButtonState) {
-            #ifdef _WIN64
-            OPD("push A_BUTTON\n");
-            #else
+            robot->points_convex.clear();
             printf("push A_BUTTON\n");
-            #endif
-            camera->GroundScan();
+            camera->GroundScan(robot->points_convex);
+            robot->compStairStep = true;
+            //ground_rectangle = fk_solver->FootToGroundFK(robot);
+            //int i;
+            //for(Vector3& p : ground_rectangle){
+            //    printf("id%d: %lf, %lf, %lf\n", i, p.x(), p.y(), p.z());
+            //    i++;
+            //}
         }
         PreButtonState = ButtonState;
         

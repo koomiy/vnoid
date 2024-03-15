@@ -1,6 +1,7 @@
 ﻿#include "fksolver.h"
 #include "rollpitchyaw.h"
 #include "robot.h"
+#include <cmath>
 
 namespace cnoid{
 namespace vnoid{
@@ -127,7 +128,7 @@ void FkSolver::Comp(const Param& param, const vector<Joint>& joint, const Base& 
             q[j] = joint[param.leg_joint_index[i] + j].q;
         }
 
-        CompLegFk(param.upper_leg_length, param.lower_leg_length, q, &leg_pos[i][0], &leg_ori[i][0], &arm_axis[i][0]);
+        CompLegFk(param.upper_leg_length, param.lower_leg_length, q, &leg_pos[i][0], &leg_ori[i][0], &leg_axis[i][0]);
 
         foot[i].ori   = base.ori*leg_ori[i][5];
         foot[i].angle = ToRollPitchYaw(foot[i].ori);
@@ -157,6 +158,87 @@ void FkSolver::Comp(const Param& param, const vector<Joint>& joint, const Base& 
     com /= total_mass;
 
     centroid.com_pos = base.pos + base.ori * com;
+}
+
+// 支持脚基準の地面点群の高さを計算する関数
+//vector<Vector3> FkSolver::FootToGroundFK(MyRobot* robot){
+vector<Vector3> FkSolver::FootToGroundFK(const Param& param, const vector<Joint>& joint, const Base& base,  vector<Foot>& foot, vector<Vector3>& points_convex){
+    // Define variables
+    Vector3    FootToGround;       // Ground coordinate from foot
+    Vector3    pos_HipToAncle;    // Ancle coordinate from base-link
+    Quaternion qua_HipToAncle;    // Ancle quaternion from base-link
+    Quaternion qua_AncleToFoot;    // Foot quaternion from ancle
+    Vector3    pos_AncleToFoot;    // Foot coordinate from ancle
+    Vector3    pos_HipToHead;     // Head coordinate from base-link
+    Vector3    pos_HeadToCamera;   // Camera coordinate from head
+    Vector3    pos_CameraToGround; // Ground coordinate from camera
+    Quaternion qua_HipToCamera;   // Camera quaternion from base-link
+
+    // comp leg fkに用いる
+    Vector3     leg_pos [2][6];
+    Quaternion  leg_ori [2][6];
+    Vector3     leg_axis[2][6];
+    double      q[7];
+    Vector3     angle_HipToCamera;
+
+    // comp leg fk
+    for(int i = 0; i < 2; i++){
+        for(int j = 0; j < 6; j++){
+            q[j] =  joint[param.leg_joint_index[i] + j].q;
+        }
+
+        CompLegFk(param.upper_leg_length, param.lower_leg_length, q, &leg_pos[i][0], &leg_ori[i][0], &leg_axis[i][0]);
+    }
+    // 右足で考える（本当は支持脚としたいが、簡単のため両足揃えて止まっているときに撮影するという前提）
+    pos_HipToAncle = leg_pos[0][5];
+    qua_HipToAncle = leg_ori[0][5];
+
+    //qua_AncleToFoot = qua_BaseToAncle; // 足首と足の角度は同じ
+    pos_AncleToFoot = Vector3(0.0, 0.0, -0.05); // 固定値
+
+    pos_HipToHead = Vector3(0.0, 0.1, 0.5+0.1); // 固定値（回転なし）
+
+    pos_HeadToCamera = Vector3(0.2, 0.0, 0.0); // 固定値（回転なし）
+    
+    // 頭はベースに対して傾いていないのでCameraのプロパティから頭とカメラの傾き関係を取得でOK
+    // カメラの角度をラジアンで設定（固定値）
+    angle_HipToCamera = Vector3(M_PI*5/180, 0, -M_PI/2);
+
+    // クォータニオンに変換
+    qua_HipToCamera = FromRollPitchYaw(angle_HipToCamera);
+
+    printf("STRAT\n");
+    std::vector<Vector3> groundFromFoot;
+    for (const Vector3& p :  points_convex){
+       // 最後に支持脚基準の地面点群の座標を計算
+        FootToGround = qua_HipToAncle.conjugate() * (pos_HipToHead + pos_HeadToCamera + qua_HipToCamera*p - pos_HipToAncle) - pos_AncleToFoot;
+        printf("%lf,%lf,%lf\n", FootToGround[0], FootToGround[1], FootToGround[2]);
+        groundFromFoot.push_back(FootToGround);
+    }
+    printf("END\n");
+
+    // 長方形の四隅の座標を計算
+    double avgZ = std::accumulate(groundFromFoot.begin(), groundFromFoot.end(), 0.0, [](double sum, const Vector3& v) {
+       return sum + v.z();
+    }) / groundFromFoot.size();
+    auto minmaxX = std::minmax_element(groundFromFoot.begin(), groundFromFoot.end(), [](const Vector3& a, const Vector3& b) {
+        return a.x() < b.x();
+    });
+    auto minmaxY = std::minmax_element(groundFromFoot.begin(), groundFromFoot.end(), [](const Vector3& a, const Vector3& b) {
+        return a.y() < b.y();
+    });
+    double minX = std::round(minmaxX.first->x() * 1000.0) / 1000.0;
+    double maxX = std::round(minmaxX.second->x() * 1000.0) / 1000.0;
+    double minY = std::round(minmaxY.first->y() * 1000.0) / 1000.0;
+    double maxY = std::round(minmaxY.second->y() * 1000.0) / 1000.0;
+    double avgZRounded = std::round(avgZ * 1000.0) / 1000.0;
+    std::vector<Vector3> groundRectangle;
+    groundRectangle.push_back(Vector3(minX, maxY, avgZ));
+    groundRectangle.push_back(Vector3(maxX, maxY, avgZ));
+    groundRectangle.push_back(Vector3(minX, minY, avgZ));
+    groundRectangle.push_back(Vector3(maxX, minY, avgZ));
+    
+    return groundRectangle;
 }
 
 }

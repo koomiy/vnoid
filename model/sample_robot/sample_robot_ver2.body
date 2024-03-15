@@ -158,8 +158,8 @@ links:
               0, 0, 1]
     elements: 
       Transform: 
-        translation: [0.10, 0, 0.0]
-        rotation: [[0.0, 0.0, 1.0, -90.0], [1.0, 0.0, 0.0, -30.0]]
+        translation: [0.2, 0.0, 0.0]
+        rotation: [[0.0, 0.0, 1.0, -90.0], [1.0, 0.0, 0.0, -85.0]]
         elements: 
           -
             type: Shape
@@ -186,15 +186,15 @@ links:
             name: RangeCamera
             id: 0
             translation: [0.0, 0.0, 0.0] 
-            rotation: [1.0, 0.0, 0.0, 60.0]
-            format: COLOR_DEPTH
+            rotation: [1.0, 0.0, 0.0, 90.0]
+            format: COLOR_POINT_CLOUD
             lens_type: "NORMAL"
             on: true
-            width: 640
-            height: 480
-            field_of_view: 60
-            near_clip_distance: 0.4
-            far_clip_distance: 4.5
+            width: 320
+            height: 240
+            field_of_view: 20
+            near_clip_distance: 0.2
+            far_clip_distance: 2.0
             frame_rate: 30
   -
     name: R_UPPERARM_P

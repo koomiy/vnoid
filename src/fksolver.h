@@ -1,6 +1,10 @@
 ﻿#pragma once
 
 #include <cnoid/EigenTypes>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include <numeric>
 
 #include <vector>
 using namespace std;
@@ -14,6 +18,7 @@ class Base;
 class Hand;
 class Foot;
 class Joint;
+class MyRobot;
 
 /* 
  * 
@@ -23,6 +28,7 @@ class Joint;
  */
 class FkSolver{
 public:
+
     /** @brief FK from hip to ankle. Returns position, orientation, and axis direction of all intermediate links.
      * 
      *  @param l1   upper leg (thigh) length
@@ -86,6 +92,9 @@ public:
      *  and the last 3 axes (Y,P,R) cross at the wrist origin.
      **/
     void CompArmFk(double l1, double l2, const double* q, Vector3& pos, Quaternion& ori);
+
+    //vector<Vector3> FootToGroundFK(MyRobot* robot);
+    vector<Vector3> FootToGroundFK(const Param& param, const vector<Joint>& joint, const Base& base,  vector<Foot>& foot, vector<Vector3>& points_convex);
 
     /** @brief Whole-body FK
      *  @param  param     Parameters.
