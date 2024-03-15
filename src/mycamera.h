@@ -36,7 +36,7 @@ public:
 
 public: 
 	virtual void Init(SimpleControllerIO* io);
-    virtual void GroundScan();
+    virtual void GroundScan(vector<Vector3>& points_convex);
 
 	MyCamera();
 
