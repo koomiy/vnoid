@@ -12,7 +12,7 @@ const double pi = 3.14159265358979;
 SteppingController::SteppingController(){
     swing_height        = 0.05;
     swing_tilt          = 0.0;
-    dsp_duration        = 0.1;
+    dsp_duration        = 0.05;
     descend_duration    = 0.0;
     descend_depth       = 0.0;
     landing_adjust_rate = 0.0;
@@ -33,6 +33,23 @@ bool SteppingController::CheckLanding(const Timer& timer, Step& step, vector<Foo
     //}
     
     return false;
+}
+
+double SteppingController::QuinticInterpolate(double s, double sm, double sf, double climb){
+    double a4;
+    if (climb <= 0){ // 下りの場合の4次係数
+        a4 = climb*(3*sf-2*sm)/(-sf*sf*sf*sf*sf + 2*sf*sf*sf*sf*sm - sf*sf*sf*sm*sm);
+    } else if (climb > 0){ // 上りの場合の4次係数
+        a4 = climb*(sf*sf*sf - 3*sf*sm*sm + 2*sm*sm*sm)/(sf*sf*sf*sf*sf*sm*sm - 2*sf*sf*sf*sf*sm*sm*sm + sf*sf*sf*sm*sm*sm*sm);
+    }
+    double a3 = -(2*climb)/(sf*sf*sf) - 2*sf*a4;
+    double a2 = (climb)/(sf*sf) - sf*a3 - sf*sf*a4;
+    double a1 = 0;
+    double a0 = 0;
+
+    double z = a0 + a1*s + a2*s*s + a3*s*s*s + a4*s*s*s*s;
+    
+    return z;
 }
 
 void SteppingController::Update(const Timer& timer, const Param& param, Footstep& footstep, Footstep& footstep_buffer, Centroid& centroid, Base& base, vector<Foot>& foot){
@@ -161,8 +178,20 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
         // foot tilting
         Vector3 tilt = stb0.foot_ori[swg]*Vector3(0.0, swing_tilt, 0.0);
 
-        foot[swg].pos_ref      = (1.0 - ch)*stb0.foot_pos[swg] + ch*stb1.foot_pos[swg];
-        foot[swg].pos_ref.z() += (cv*(swing_height + 0.5*descend_depth) - cv2*descend_depth);
+        // calc horizontal component of the swing foot trajectory
+        foot[swg].pos_ref.x()      = (1.0 - ch)*stb0.foot_pos[swg].x() + ch*stb1.foot_pos[swg].x();
+        foot[swg].pos_ref.y()      = (1.0 - ch)*stb0.foot_pos[swg].y() + ch*stb1.foot_pos[swg].y();
+
+        // calc vertical component of the swing foot trajectory
+        double tm = 0.3;
+        double climb = stb1.foot_pos[swg].z() - stb0.foot_pos[swg].z();
+        if (climb != 0.0){  // for walking on stairs
+            foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + QuinticInterpolate(ts, tm, tauv, climb);   // quintic interpolation
+        } else { // for walking on horizontal surfaces or slightly uneven terrain
+            foot[swg].pos_ref.z()  = (1.0 - ch)*stb0.foot_pos[swg].z() + ch*stb1.foot_pos[swg].z();   // cycloid
+            foot[swg].pos_ref.z() += (cv*(swing_height + 0.5*descend_depth) - cv2*descend_depth);
+        }
+        
         foot[swg].angle_ref    = stb0.foot_angle[swg] + ch*turn + cw*tilt;
         foot[swg].ori_ref      = FromRollPitchYaw(foot[swg].angle_ref);
         foot[swg].contact_ref  = false;
