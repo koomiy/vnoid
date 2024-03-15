@@ -195,27 +195,60 @@ Vector3 FkSolver::FootToGroundFK(const Param& param, const vector<Joint>& joint,
     // 右足で考える（本当は支持脚としたいが、簡単のため両足揃えて止まっているときに撮影するという前提）
     pos_BaseToAncle = leg_pos[0][5];
     qua_BaseToAncle = leg_ori[0][5];
+    // pos_BaseToAncle = leg_pos[0][5] + param.base_to_hip[0];
+    // qua_BaseToAncle = leg_ori[0][5];
 
     qua_AncleToFoot = qua_BaseToAncle; // 足首と足の角度は同じ
     pos_AncleToFoot = Vector3(0.0, 0.0, -0.05); // 固定値
 
-    pos_BaseToHead = Vector3(0.0, 0.0, 0.5); // 固定値（回転なし）
+    pos_BaseToHead = Vector3(0.0, 0.1, 0.5); // 固定値（回転なし）
 
     pos_HeadToCamera = Vector3(0.2, 0.0, 0.0); // 固定値（回転なし）
 
     // カメラ情報から点群の相対座標を取得
-    pos_CameraToGround = Vector3(-0.334247, 0.000000, -1.421707);
+    std::vector<Vector3> pcList;
+    pcList.clear(); // 既存の要素を削除
+    pcList.push_back(Vector3(-0.290532f, 0.159793f, -1.235767f));
+    pcList.push_back(Vector3(-0.291616f, 0.207776f, -1.240375f));
+    pcList.push_back(Vector3(-0.291783f, 0.215190f, -1.241087f));
+    pcList.push_back(Vector3(-0.291825f, 0.217045f, -1.241265f));
+    pcList.push_back(Vector3(-0.288177f, 0.217045f, -1.241266f));
+    pcList.push_back(Vector3(-0.268114f, 0.217045f, -1.241267f));
+    pcList.push_back(Vector3(-0.005472f, 0.217048f, -1.241283f));
+    pcList.push_back(Vector3(0.264474f, 0.217051f, -1.241300f));
+    pcList.push_back(Vector3(0.282713f, 0.217051f, -1.241301f));
+    pcList.push_back(Vector3(0.290009f, 0.217051f, -1.241301f));
+    pcList.push_back(Vector3(0.289968f, 0.215196f, -1.241123f));
+    pcList.push_back(Vector3(0.286636f, 0.066701f, -1.226861f));
+    pcList.push_back(Vector3(0.283737f, -0.062458f, -1.214457f));
+    pcList.push_back(Vector3(0.282153f, -0.133091f, -1.207673f));
+    pcList.push_back(Vector3(0.281210f, -0.175093f, -1.203638f));
+    pcList.push_back(Vector3(0.280702f, -0.197727f, -1.201464f));
+    pcList.push_back(Vector3(0.280390f, -0.211615f, -1.200130f));
+    pcList.push_back(Vector3(0.273336f, -0.211615f, -1.200130f));
+    pcList.push_back(Vector3(0.022925f, -0.211613f, -1.200115f));
+    pcList.push_back(Vector3(-0.282146f, -0.211609f, -1.200097f));
+    pcList.push_back(Vector3(-0.286479f, -0.019695f, -1.218529f));
+    // pos_CameraToGround = Vector3(-0.334247, 0.000000, -1.421707);
     
     // 頭はベースに対して傾いていないのでCameraのプロパティから頭とカメラの傾き関係を取得でOK
     // カメラの角度をラジアンで設定（固定値）
-    angle_BaseToCamera = Vector3(-M_PI*5/180, 0, -M_PI/2);
+    angle_BaseToCamera = Vector3(M_PI*5/180, 0, -M_PI/2);
+    // angle_BaseToCamera = Vector3(0, 0, -M_PI/2);
     // printf("angle_BaseToCamera: %lf, %lf, %lf\n", angle_BaseToCamera[0], angle_BaseToCamera[1], angle_BaseToCamera[2]);
     // クォータニオンに変換
     qua_BaseToCamera = FromRollPitchYaw(angle_BaseToCamera);
 
-    // 最後に支持脚基準の地面点群の座標を計算
-    FootToGround = qua_AncleToFoot.conjugate() * (pos_BaseToHead + pos_HeadToCamera + qua_BaseToCamera*pos_CameraToGround - pos_BaseToAncle) - pos_AncleToFoot;
-    printf("FootToGround[2]: %lf\n", FootToGround[2]);
+    printf("STRAT\n");
+    for (const Vector3&v : pcList){
+       // 最後に支持脚基準の地面点群の座標を計算
+        FootToGround = qua_BaseToAncle.conjugate() * (pos_BaseToHead + pos_HeadToCamera + qua_BaseToCamera*v - pos_BaseToAncle) - pos_AncleToFoot + Vector3(0, 0, 0.04);
+        printf("%lf,%lf,%lf\n", FootToGround[0], FootToGround[1], FootToGround[2]); 
+    }
+    printf("END\n");
+    // // 最後に支持脚基準の地面点群の座標を計算
+    // FootToGround = qua_BaseToAncle.conjugate() * (pos_BaseToHead + pos_HeadToCamera + qua_BaseToCamera*pos_CameraToGround - pos_BaseToAncle) - pos_AncleToFoot;
+    // printf("FootToGround[2]: %lf\n", FootToGround[2]);
     return FootToGround;
 }
 
