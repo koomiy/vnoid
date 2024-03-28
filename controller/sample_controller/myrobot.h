@@ -35,6 +35,8 @@ public:
     FkSolver            fk_solver;
     IkSolver            ik_solver;
 
+    bool    PreButtonState;
+
 public:
 	virtual void  Init   (SimpleControllerIO* io);
 	virtual void  Control();

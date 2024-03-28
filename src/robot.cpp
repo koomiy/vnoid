@@ -184,9 +184,13 @@ Robot::Robot(){
     foot_moment_filter_cutoff = 20.0;
     joint_pos_filter_cutoff   = 10.0;
 
-	max_stride = 0.25;
-	max_sway = 0.10;
-	max_turn = 0.10;
+	max_stride = 0.07;
+	fine_stride = 0.25;
+	max_sway = 0.07;
+	fine_sway = 0.25;
+	max_turn = 0.05;
+
+	fineSwitch = 0;
 }
 
 void Robot::Init(SimpleControllerIO* io, Timer& timer, vector<Joint>& joint){
@@ -322,31 +326,56 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 void Robot::Operation(deque<Step>& steps){
 	joystick.readCurrentState();
 	Step step;
+	fineSwitch	  = joystick.getButtonState(Joystick::X_BUTTON);
 	step.stride   = - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
 	step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
 	step.sway     = - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
+
 	step.spacing  = 0.20;
 	step.climb    = 0.0;
-	if (joystick.getPosition(Joystick::L_STICK_V_AXIS) < 0) {
-        step.climb    = -0.20;
-    }
-	step.duration = 0.5;
-
-// add step modification on the stairs: 2024/03/15: Tanaka
-// P and Q are the self position and the target position.
-// A and B are the component of the edge (E).
-// 以下にエッジを構成するA, B点のxy座標を入れれば使えるはず．
-	Vector2 P = Vector2(0.0, 0.0);
-	Vector2 Q = Vector2(step.stride, step.sway);
-	L_PE = abs((B - A).cross(P - A)) / (B - A).length();			// 現在の支持位置から、着地可能エッジまでの距離
-	L_PQ = (Q - P).length();										// 現在の支持位置から、目標着地位置までの距離
-	r_leg = sqrt(0.05 * 0.05 + 0.1 * 0.1);							// 足を円モデルとしたときの半径
-	if (L - l <= r_leg){
-		Vector3  Q_mod= (L - r_leg) * (Q - P) / (Q - P).length();	// 修正後の目標着地位置
-		step.stride = Q_mod(1);
-		step.sway 	= Q_mod(2);
+	step.duration = 0.3;
+	
+	if(fineSwitch == 1){
+		step.stride   = - fine_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
+		step.sway     = - fine_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
+		step.duration = 0.5;
 	}
 
+	// add step modification on the stairs: 2024/03/15: Tanaka
+	// P and Q are the self position and the target position.
+	// A and B are the component of the edge (E).
+	// 以下にエッジを構成するA, B点のxy座標を入れれば使えるはず．
+	if(step.stride > 0 && compStairStep){
+		step.duration = 0.5;
+		step.climb    = ground_rectangle[0].z();
+		// printf("step.climb: %lf\n", step.climb);
+		Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
+		Vector2 B = Vector2(ground_rectangle[1].x(), ground_rectangle[1].y());
+		Vector2 C = Vector2(ground_rectangle[2].x(), ground_rectangle[2].y());
+		Vector2 D = Vector2(ground_rectangle[3].x(), ground_rectangle[3].y());
+		Vector2 P = Vector2(0.0, 0.0);
+		Vector2 Q = Vector2(step.stride, step.sway);
+		double L_PEfur = std::abs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();			// 現在の支持位置から、着地可能エッジまでの距離
+		double L_PEnear = std::abs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();			// 現在の支持位置から、着地可能エッジまでの距離
+		double L_PQ = (Q - P).norm();										// 現在の支持位置から、目標着地位置までの距離
+		double r_leg = std::sqrt(0.05 * 0.05 + 0.1 * 0.1);							// 足を円モデルとしたときの半径
+		Vector2  Q_mod = Vector2(0.0, 0.0);
+		if(step.climb < 0){
+			if (L_PEfur - L_PQ <= r_leg){
+				Q_mod = (L_PEfur - r_leg) * (Q - P) / (Q - P).norm();	// 修正後の目標着地位置
+				step.stride = Q_mod.x();
+				step.sway 	= Q_mod.y();
+			}			
+		}
+		else if(step.climb > 0){
+			if (L_PEnear - L_PQ <= r_leg){
+			Q_mod = (L_PEnear + 1/2*r_leg) * (Q - P) / (Q - P).norm();	// 修正後の目標着地位置
+			step.stride = Q_mod.x();
+			step.sway 	= Q_mod.y();
+			}
+		}
+	}
+	
 	steps.push_back(step);
 	steps.push_back(step);
 	steps.push_back(step);

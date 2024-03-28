@@ -83,13 +83,13 @@ void MyCamera::GroundScan(vector<Vector3>& points_convex) {
         //printf("point data : %lf, %lf, %lf\n", e(0), e(1), e(2));
 
         // color(R, G, B)
-        //point.r = pixels[3 * i + 0];
-        //point.g = pixels[3 * i + 1];
-        //point.b = pixels[3 * i + 2];
+        point.r = pixels[3 * i + 0];
+        point.g = pixels[3 * i + 1];
+        point.b = pixels[3 * i + 2];
 
-        point.r = 255;
-        point.g = 255;
-        point.b = 255;
+        //point.r = 255;
+        //point.g = 255;
+        //point.b = 255;
 
         ++i;
     }
@@ -169,7 +169,7 @@ void MyCamera::GroundScan(vector<Vector3>& points_convex) {
 
     // make a viewer of point cloud
     pcl::visualization::CloudViewer viewer("PointCloudViewer");
-    viewer.showCloud(cloud_plane);
+    viewer.showCloud(cloud_convex);
     
     // set the thread that called at once in visualization
     viewer.runOnVisualizationThreadOnce(viewerOneOff);

@@ -84,7 +84,7 @@ items:
               plugin: Body
               class: WorldLogFileItem
               data: 
-                file: "${SHARE}/project/vnoid_teamMA1_log.log"
+                file: "${SHARE}/project/teamMA1_stair.log"
                 format: CNOID-WORLD-LOG
                 timeStampSuffix: false
                 recordingFrameRate: 0
@@ -130,7 +130,8 @@ items:
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-            initialRootPosition: [ 13.2, 1.0, 0.95 ]
+            initialRootPosition: [0, 0, 1.0]
+            #initialRootPosition: [ 12.7, 1.0, 0.95 ]
             initialRootAttitude: [ 
               1, 0, 0, 
               0, 1, 0, 

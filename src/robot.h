@@ -220,8 +220,12 @@ public:
 	// parameters
 
 	double max_stride;
+	double fine_stride;
 	double max_turn;
 	double max_sway;
+	double fine_sway;
+
+	int fineSwitch;
 
 	bool      base_actuation;             ///< base actuation. if set true, the base link of the robot can be moved directly.
     double    gyro_filter_cutoff;         ///< cutoff frequency [Hz] of filter for rate gyro sensor

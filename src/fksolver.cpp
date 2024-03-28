@@ -207,15 +207,15 @@ vector<Vector3> FkSolver::FootToGroundFK(const Param& param, const vector<Joint>
     // クォータニオンに変換
     qua_HipToCamera = FromRollPitchYaw(angle_HipToCamera);
 
-    printf("STRAT\n");
+    //printf("STRAT\n");
     std::vector<Vector3> groundFromFoot;
     for (const Vector3& p :  points_convex){
        // 最後に支持脚基準の地面点群の座標を計算
         FootToGround = qua_HipToAncle.conjugate() * (pos_HipToHead + pos_HeadToCamera + qua_HipToCamera*p - pos_HipToAncle) - pos_AncleToFoot;
-        printf("%lf,%lf,%lf\n", FootToGround[0], FootToGround[1], FootToGround[2]);
+        //printf("%lf,%lf,%lf\n", FootToGround[0], FootToGround[1], FootToGround[2]);
         groundFromFoot.push_back(FootToGround);
     }
-    printf("END\n");
+    //printf("END\n");
 
     // 長方形の四隅の座標を計算
     double avgZ = std::accumulate(groundFromFoot.begin(), groundFromFoot.end(), 0.0, [](double sum, const Vector3& v) {
@@ -232,11 +232,11 @@ vector<Vector3> FkSolver::FootToGroundFK(const Param& param, const vector<Joint>
     double minY = std::round(minmaxY.first->y() * 1000.0) / 1000.0;
     double maxY = std::round(minmaxY.second->y() * 1000.0) / 1000.0;
     double avgZRounded = std::round(avgZ * 1000.0) / 1000.0;
-    std::vector<Vector3> groundRectangle;
-    groundRectangle.push_back(Vector3(minX, maxY, avgZ));
+    std::vector<Vector3> groundRectangle;   // 時計回りに定義している
     groundRectangle.push_back(Vector3(maxX, maxY, avgZ));
-    groundRectangle.push_back(Vector3(minX, minY, avgZ));
     groundRectangle.push_back(Vector3(maxX, minY, avgZ));
+    groundRectangle.push_back(Vector3(minX, minY, avgZ));
+    groundRectangle.push_back(Vector3(minX, maxY, avgZ));
     
     return groundRectangle;
 }

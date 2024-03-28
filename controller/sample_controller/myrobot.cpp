@@ -140,7 +140,7 @@ void MyRobot::Init(SimpleControllerIO* io){
     // init stabilizer
     stabilizer.orientation_ctrl_gain_p = 100.0;
     stabilizer.orientation_ctrl_gain_d = 10.0;
-    stabilizer.dcm_ctrl_gain           = 2.0;
+    stabilizer.dcm_ctrl_gain           = 5.0;
     stabilizer.base_tilt_rate          = 5.0;
     stabilizer.base_tilt_damping_p     = 100.0;
     stabilizer.base_tilt_damping_d     = 50.0;
@@ -154,7 +154,7 @@ void MyRobot::Control(){
 
     // calc FK
     fk_solver.Comp(param, joint, base, centroid, hand, foot);
-    if (compStairStep) {
+    if (compStairStep && !PreButtonState) {
         ground_rectangle.clear();
         ground_rectangle = fk_solver.FootToGroundFK(param, joint, base, foot, points_convex);
         int i = 0;
@@ -162,9 +162,8 @@ void MyRobot::Control(){
             printf("id%d: %lf, %lf, %lf\n", i, p.x(), p.y(), p.z());
             i++;
         }
-        compStairStep = false;
     }
-    
+    PreButtonState = compStairStep;
 
 	if(timer.count % 10 == 0){
 		// read joystick
@@ -183,16 +182,18 @@ void MyRobot::Control(){
 			R_BUTTON -> R
 		    */
 		
-		//std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
-		//	    << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
-		//	    << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
-		//	    << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
-		//	    << joystick.getButtonState(Joystick::A_BUTTON) << " "
-		//	    << joystick.getButtonState(Joystick::B_BUTTON) << " "
-		//	    << joystick.getButtonState(Joystick::X_BUTTON) << " "
-		//	    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
-		//	    << joystick.getButtonState(Joystick::L_BUTTON) << " "
-		//	    << joystick.getButtonState(Joystick::R_BUTTON) << std::endl;
+		// std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
+		// 	    << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
+		// 	    << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
+		// 	    << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
+		// 	    << joystick.getButtonState(Joystick::A_BUTTON) << " "
+		// 	    << joystick.getButtonState(Joystick::B_BUTTON) << " "
+		// 	    << joystick.getButtonState(Joystick::X_BUTTON) << " "
+		// 	    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
+		// 	    << joystick.getButtonState(Joystick::L_BUTTON) << " "
+		// 	    << joystick.getButtonState(Joystick::R_BUTTON) << " "
+        //         << joystick.getPosition(Joystick::DIRECTIONAL_PAD_V_AXIS) << " " 
+        //         << joystick.getPosition(Joystick::DIRECTIONAL_PAD_H_AXIS) << " " <<std::endl;
 	
 		// erase current footsteps
 		while(footstep.steps.size() > 2)
@@ -226,15 +227,15 @@ void MyRobot::Control(){
 
     // stepping controller generates swing foot trajectory 
     // it also performs landing position adaptation
-    stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot);
+    stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot, compStairStep, ground_rectangle);
     
     // stabilizer performs balance feedback
     stabilizer         .Update(timer, param, footstep_buffer, centroid, base, foot);
     
     // step timing adaptation
-    //Centroid centroid_pred = centroid;
-    //stabilizer.Predict(timer, paramb, footstep_buffer, base, centroid_pred);
-    //stepping_controller.AdjustTiming(timer, param, centroid_pred, footstep, footstep_buffer);
+    // Centroid centroid_pred = centroid;
+    // stabilizer.Predict(timer, param, footstep_buffer, base, centroid_pred);
+    // stepping_controller.AdjustTiming(timer, param, centroid_pred, footstep, footstep_buffer);
 
     hand[0].pos_ref = centroid.com_pos_ref + base.ori_ref*Vector3(0.0, -0.25, -0.1);
     hand[0].ori_ref = base.ori_ref;

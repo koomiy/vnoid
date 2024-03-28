@@ -13,9 +13,6 @@
 #include "myrobot.h"
 #include "mycamera.h"
 
-// only when simulate on windows
-//#define _WIN64
-
 using namespace cnoid;
 using namespace cnoid::vnoid;
 
@@ -26,7 +23,7 @@ public:
     FkSolver* fk_solver;
     Joystick joystick;
 
-    vector<Vector3> ground_rectangle;
+    //vector<Vector3> ground_rectangle;
     bool PreButtonState;
     int count;
 

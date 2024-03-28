@@ -199,7 +199,9 @@ void MyRobot::Control(){
 
     // stepping controller generates swing foot trajectory 
     // it also performs landing position adaptation
-    stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot);
+    bool SW = false;
+    vector<Vector3> V;
+    stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot, SW, V);
 
     // stabilizer performs balance feedback
     stabilizer.Update(timer, param, footstep_buffer, centroid, base, foot);

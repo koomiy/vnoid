@@ -35,11 +35,14 @@ bool SteppingController::CheckLanding(const Timer& timer, Step& step, vector<Foo
     return false;
 }
 
-double SteppingController::QuinticInterpolate(double s, double sm, double sf, double climb){
+double SteppingController::QuinticInterpolate(double s/*, double sm*/, double sf, double climb){
     double a4;
+    double sm = 0.0;
     if (climb <= 0){ // 下りの場合の4次係数
+        sm = 0.33;
         a4 = climb*(3*sf-2*sm)/(-sf*sf*sf*sf*sf + 2*sf*sf*sf*sf*sm - sf*sf*sf*sm*sm);
     } else if (climb > 0){ // 上りの場合の4次係数
+        sm = 0.33;
         a4 = climb*(sf*sf*sf - 3*sf*sm*sm + 2*sm*sm*sm)/(sf*sf*sf*sf*sf*sm*sm - 2*sf*sf*sf*sf*sm*sm*sm + sf*sf*sf*sm*sm*sm*sm);
     }
     double a3 = -(2*climb)/(sf*sf*sf) - 2*sf*a4;
@@ -52,7 +55,7 @@ double SteppingController::QuinticInterpolate(double s, double sm, double sf, do
     return z;
 }
 
-void SteppingController::Update(const Timer& timer, const Param& param, Footstep& footstep, Footstep& footstep_buffer, Centroid& centroid, Base& base, vector<Foot>& foot){
+void SteppingController::Update(const Timer& timer, const Param& param, Footstep& footstep, Footstep& footstep_buffer, Centroid& centroid, Base& base, vector<Foot>& foot, bool& compStairStep, vector<Vector3>& ground_rectangle){
     if(CheckLanding(timer, footstep_buffer.steps[0], foot)){
         if(footstep.steps.size() > 1){
             // pop step just completed from the footsteps
@@ -129,7 +132,7 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
 	stb0.dcm = (1.0-alpha)*(stb0.zmp + offset) + alpha*stb1.dcm;
     
     // landing adjustment based on dcm
-    Vector3 land_rel = (st1.foot_pos[swg] - st0.foot_pos[sup]) - (stb0.dcm - stb0.foot_pos[sup]) + 0.0*(stb0.zmp - stb0.foot_pos[sup]);
+    Vector3 land_rel = (st1.foot_pos[swg] - st0.foot_pos[sup]) - (stb0.dcm - stb0.foot_pos[sup]) + 0.0*(stb0.zmp - stb0.foot_pos[sup]); //centroid.dcm_ref
 	stb1.foot_pos[swg].x() = centroid.dcm_ref.x() + land_rel.x();
 	stb1.foot_pos[swg].y() = centroid.dcm_ref.y() + land_rel.y();
 
@@ -182,11 +185,44 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
         foot[swg].pos_ref.x()      = (1.0 - ch)*stb0.foot_pos[swg].x() + ch*stb1.foot_pos[swg].x();
         foot[swg].pos_ref.y()      = (1.0 - ch)*stb0.foot_pos[swg].y() + ch*stb1.foot_pos[swg].y();
 
+        //// 魔法定数を決めるプログラム
+        //double tm = 0.0;
+        //const double eps = 5.0e-4;
+        //Vector2 A = Vector2(ground_rectangle[3].x(), ground_rectangle[3].y());
+		//Vector2 B = Vector2(ground_rectangle[2].x(), ground_rectangle[2].y());
+		//Vector2 P = Vector2(0.0, 0.0);
+//
+        //double ts_2   = 0.0;            //< time elapsed in ssp
+        //double tauv_2 = stb0.duration - dsp_duration; //< duration of vertical movement
+        //double tauh_2 = tauv_2 - descend_duration;     //< duration of horizontal movement
+        //while (ts_2 >= 0.0 && ts_2 <= tauv){
+        //    //printf("unchi\n");
+        //    // cycloid swing profile
+        //    double sv_2     = ts/tauv_2;
+        //    double sh_2     = ts/tauh_2;
+        //    double thetav_2 = 2.0*pi*sv_2;
+        //    double thetah_2 = 2.0*pi*sh_2;
+        //    double ch_2     = (sh_2 < 1.0 ? (thetah_2 - sin(thetah_2))/(2.0*pi) : 1.0);
+//
+        //    Vector2 Q = ch_2*Vector2(stb1.foot_pos[swg].x()-stb0.foot_pos[swg].x(), stb1.foot_pos[swg].y() - stb0.foot_pos[swg].y());
+		//    double L_PE = std::abs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();			// 現在の支持位置から、着地可能エッジまでの距離
+		//    double L_PQ = (Q - P).norm();										// 現在の支持位置から、目標着地位置までの距離
+		//    double r_leg = std::sqrt(0.05 * 0.05 + 0.1 * 0.1);							// 足を円モデルとしたときの半径
+        //    if (std::abs((L_PE + r_leg) - L_PQ) < eps){
+        //        tm = ts_2;
+        //        continue;
+        //    }
+        //    ts_2 = ts_2 + 0.1;
+        //}
+        //printf("tm: %lf\n", tm);
+
         // calc vertical component of the swing foot trajectory
-        double tm = 0.3;
         double climb = stb1.foot_pos[swg].z() - stb0.foot_pos[swg].z();
-        if (climb != 0.0){  // for walking on stairs
-            foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + QuinticInterpolate(ts, tm, tauv, climb);   // quintic interpolation
+        if (std::abs(climb) > 1.0e-02){  // for walking on stairs
+            foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + QuinticInterpolate(ts/*, tm*/, tauv, climb);   // quintic interpolation
+            if (ts >= tauv - 0.005){
+                compStairStep = false;  // 階段歩行が一歩完了したらfalseにする
+            }
         } else { // for walking on horizontal surfaces or slightly uneven terrain
             foot[swg].pos_ref.z()  = (1.0 - ch)*stb0.foot_pos[swg].z() + ch*stb1.foot_pos[swg].z();   // cycloid
             foot[swg].pos_ref.z() += (cv*(swing_height + 0.5*descend_depth) - cv2*descend_depth);
